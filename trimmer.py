@@ -275,7 +275,7 @@ class VideoTrimmer:
 
             # Run ffprobe command
             ffprobe_cmd = [
-                "ffprobe",
+                "/opt/homebrew/bin/ffprobe",
                 "-select_streams",
                 "v",
                 "-show_entries",
@@ -316,7 +316,7 @@ class VideoTrimmer:
 
                     # Run ffmpeg command
                     ffmpeg_cmd = [
-                        "ffmpeg",
+                        "/opt/homebrew/bin/ffmpeg",
                         "-i",
                         self.video_path,
                         "-ss",
