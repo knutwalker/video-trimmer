@@ -17,6 +17,7 @@ class VideoTrimmer:
         self.root.geometry("1200x900")
 
         self.video_path = None
+        self.output_path = None
         self.cap = None
         self.total_frames = 0
         self.fps = 30
@@ -266,7 +267,20 @@ class VideoTrimmer:
             messagebox.showerror("Error", "No video selected")
             return
 
-        threading.Thread(target=self._process_video_thread, daemon=True).start()
+        base_name, ext = os.path.splitext(self.video_path)
+        base_dir, base_file_name = os.path.split(base_name)
+        output_file_name = f"{base_file_name}_trimmed{ext}"
+
+        output_file_path = filedialog.asksaveasfilename(
+            initialdir=base_dir,
+            initialfile=output_file_name,
+            defaultextension=ext,
+            filetypes=[("Video files", "*.mp4 *.avi *.mov *.mkv *.wmv")],
+        )
+
+        if output_file_path:
+            self.output_path = output_file_path
+            threading.Thread(target=self._process_video_thread, daemon=True).start()
 
     def _process_video_thread(self):
         try:
@@ -310,10 +324,6 @@ class VideoTrimmer:
                     seconds = pts_time % 60
                     out_time = f"{hours:02d}:{minutes:02d}:{seconds:06.3f}"
 
-                    # Generate output filename
-                    base_name, ext = os.path.splitext(self.video_path)
-                    output_file = f"{base_name}_trimmed{ext}"
-
                     # Run ffmpeg command
                     ffmpeg_cmd = [
                         "/opt/homebrew/bin/ffmpeg",
@@ -333,7 +343,7 @@ class VideoTrimmer:
                         "copy",
                         "-avoid_negative_ts",
                         "1",
-                        output_file,
+                        self.output_path,
                         "-y",
                     ]
 
