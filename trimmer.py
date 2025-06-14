@@ -348,14 +348,8 @@ class VideoTrimmer:
                     ]
 
                     subprocess.run(ffmpeg_cmd)
+                    subprocess.call(["open", self.output_path])
 
-                    self.root.after(
-                        0,
-                        lambda: messagebox.showinfo(
-                            "Success",
-                            f"Video saved as: {os.path.basename(output_file)}",
-                        ),
-                    )
                 else:
                     self.root.after(
                         0,
