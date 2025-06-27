@@ -62,7 +62,7 @@ jobs:
         mv trimmer${{ steps.os-info.outputs.exe_ext }} trimmer-${{ steps.os-info.outputs.os_name }}${{ steps.os-info.outputs.exe_ext }}
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: trimmer-${{ steps.os-info.outputs.os_name }}
         path: dist/trimmer-${{ steps.os-info.outputs.os_name }}${{ steps.os-info.outputs.exe_ext }}
