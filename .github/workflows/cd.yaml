@@ -22,6 +22,14 @@ jobs:
       with:
         python-version: '3.12'
 
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-pyinstaller-opencv-pillow
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
     - name: Install system dependencies (Linux)
       if: runner.os == 'Linux'
       run: |
