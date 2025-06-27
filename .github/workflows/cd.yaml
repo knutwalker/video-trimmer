@@ -1,0 +1,101 @@
+name: Build Video Trimmer
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install system dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-tk
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller tkinter opencv-python pillow
+
+    - name: Build executable
+      run: |
+        pyinstaller -F trimmer.py
+
+    - name: Get OS name and executable extension
+      id: os-info
+      shell: bash
+      run: |
+        case "${{ runner.os }}" in
+          Windows)
+            echo "os_name=windows" >> $GITHUB_OUTPUT
+            echo "exe_ext=.exe" >> $GITHUB_OUTPUT
+            ;;
+          macOS)
+            echo "os_name=macos" >> $GITHUB_OUTPUT
+            echo "exe_ext=" >> $GITHUB_OUTPUT
+            ;;
+          Linux)
+            echo "os_name=linux" >> $GITHUB_OUTPUT
+            echo "exe_ext=" >> $GITHUB_OUTPUT
+            ;;
+        esac
+
+    - name: Rename executable
+      shell: bash
+      run: |
+        cd dist
+        mv trimmer${{ steps.os-info.outputs.exe_ext }} trimmer-${{ steps.os-info.outputs.os_name }}${{ steps.os-info.outputs.exe_ext }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: trimmer-${{ steps.os-info.outputs.os_name }}
+        path: dist/trimmer-${{ steps.os-info.outputs.os_name }}${{ steps.os-info.outputs.exe_ext }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Delete existing latest release
+      uses: dev-drprasad/delete-tag-and-release@v1.0
+      with:
+        tag_name: latest
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
+
+    - name: Create latest release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: latest
+        name: Latest Build
+        body: |
+          Latest build from commit ${{ github.sha }}
+
+          **Changes:** ${{ github.event.head_commit.message }}
+        files: |
+          trimmer-windows/trimmer-windows.exe
+          trimmer-macos/trimmer-macos
+          trimmer-linux/trimmer-linux
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
