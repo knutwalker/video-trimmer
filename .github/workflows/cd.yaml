@@ -30,7 +30,7 @@ jobs:
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pyinstaller tkinter opencv-python pillow
+        pip install pyinstaller opencv-python pillow
 
     - name: Build executable
       run: |
