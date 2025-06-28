@@ -348,7 +348,7 @@ class VideoTrimmer:
                     ]
 
                     subprocess.run(ffmpeg_cmd)
-                    subprocess.call(["open", self.output_path])
+                    messagebox.showinfo(title="Done", message="Processing finished")
 
                 else:
                     self.root.after(
